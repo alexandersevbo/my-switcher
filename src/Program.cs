@@ -5,10 +5,14 @@ namespace MySwitcher;
 internal static class Program
 {
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
+
+        // Запущен скачанный обновлятором exe: заменить старую версию и перезапустить её.
+        if (Updater.TryRunUpdateMode(args))
+            return;
 
         // Запуск скачанного exe: предложить установить и перезапуститься уже из папки установки.
         if (Installer.OfferInstall())
@@ -27,6 +31,7 @@ internal static class Program
             return;
         }
 
+        Updater.CleanupTemp();
         SynchronizationContext.SetSynchronizationContext(new WindowsFormsSynchronizationContext());
         Application.Run(new TrayContext());
     }

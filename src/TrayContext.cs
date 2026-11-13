@@ -26,6 +26,7 @@ internal sealed class TrayContext : ApplicationContext
         menu.Items.Add(_enabledItem);
         menu.Items.Add(_autostartItem);
         menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add($"Проверить обновления… (у вас {Updater.CurrentVersion})", null, (_, _) => CheckUpdates());
         if (Installer.IsInstalledCopy)
             menu.Items.Add("Удалить с компьютера…", null, (_, _) => Uninstall());
         menu.Items.Add("Выход", null, (_, _) => ExitThread());
@@ -70,6 +71,23 @@ internal sealed class TrayContext : ApplicationContext
     {
         Installer.SetAutostartForCurrent(!IsAutostart());
         _autostartItem.Checked = IsAutostart();
+    }
+
+    private bool _checkingUpdates;
+
+    private async void CheckUpdates()
+    {
+        if (_checkingUpdates) return;
+        _checkingUpdates = true;
+        try
+        {
+            if (await Updater.CheckAndUpdateAsync())
+                ExitThread();
+        }
+        finally
+        {
+            _checkingUpdates = false;
+        }
     }
 
     private void Uninstall()
